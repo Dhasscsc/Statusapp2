@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>தாஸ் பொது சேவை மையம் - கூகுல் டிரைவ் இணைப்புடன்</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .btn-group {
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .table th, .table td {
+            vertical-align: middle;
+            text-align: center;
+        }
+        .btn-sm {
+            margin: 2px;
+        }
+        .whatsapp-link {
+            cursor: pointer;
+            color: #25D366;
+            font-size: 20px;
+            margin: 0 5px;
+            transition: 0.2s;
+        }
+        .whatsapp-link:hover {
+            color: #128C7E;
+            transform: scale(1.1);
+        }
+        .drive-link {
+            cursor: pointer;
+            color: #0F9D58;
+            font-size: 20px;
+            margin: 0 5px;
+            transition: 0.2s;
+        }
+        .drive-link:hover {
+            color: #0B7E46;
+            transform: scale(1.1);
+        }
+        .last-updated {
+            font-size: 0.7rem;
+            color: #6c757d;
+            white-space: nowrap;
+        }
+        .whatsapp-count, .drive-count {
+            font-size: 0.7rem;
+            background: #e9ecef;
+            border-radius: 20px;
+            padding: 2px 6px;
+            margin-left: 4px;
+            display: inline-block;
+        }
+        .copy-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            z-index: 1000;
+            animation: fadeOut 2s ease;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; }
+            70% { opacity: 1; }
+            100% { opacity: 0; display: none; }
+        }
+        @media print {
+            .btn-group, form, .card-header .btn, .no-print, .whatsapp-link, .drive-link {
+                display: none !important;
+            }
+            body { background: white; }
+        }
+        .badge {
+            font-size: 0.8rem;
+        }
+        .table-responsive {
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .folder-link-card {
+            background: #f8f9fa;
+            border-left: 4px solid #0F9D58;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid px-4 py-3">
+        <h1 class="text-center mb-4">
+            <i class="fas fa-tools text-primary"></i> 
+            தாஸ் பொது சேவை மையம் - வேலை கண்காணிப்பு
+        </h1>
+
+        <!-- Google Drive Folder Link Setting Card -->
+        <div class="card shadow mb-3 folder-link-card">
+            <div class="card-body py-2">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <i class="fab fa-google-drive text-success"></i> 
+                        <strong>கூகுல் டிரைவ் கோப்புறை இணைப்பு:</strong>
+                        <input type="text" id="googleDriveFolderLink" class="form-control form-control-sm d-inline-block w-50 mx-2" 
+                               placeholder="Google Drive கோப்புறை இணைப்பை இங்கே ஒட்டவும்" 
+                               value="https://drive.google.com/drive/folders/YOUR_FOLDER_ID">
+                        <small class="text-muted">(முடிந்த வேலைகளுக்கு இந்த இணைப்பு வழங்கப்படும்)</small>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <button class="btn btn-sm btn-success" id="saveDriveLinkBtn">
+                            <i class="fas fa-save"></i> சேமி
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- படிவம் -->
+        <div id="formSection" class="card shadow mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-plus-circle"></i> புதிய வேலை பதிவு / திருத்தம்</h5>
+            </div>
+            <div class="card-body">
+                <form id="serviceForm">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <label>பெயர் *</label>
+                            <input type="text" id="name" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>செல் நம்பர் *</label>
+                            <input type="tel" id="mobile" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>சேவை பெயர் *</label>
+                            <input type="text" id="serviceName" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>குறிப்பு எண் *</label>
+                            <input type="text" id="refNo" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>சேவை நிலை</label>
+                            <select id="status" class="form-control">
+                                <option value="Pending">⏳ நிலுவையில்</option>
+                                <option value="In Progress">🔧 செயல்பாட்டில்</option>
+                                <option value="Completed">✅ முடிந்தது</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label>குறிப்பு</label>
+                            <input type="text" id="note" class="form-control" placeholder="கூடுதல் விபரம்">
+                        </div>
+                        <div class="col-md-2 mb-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-save"></i> சேமி / புதுப்பி
+                            </button>
+                        </div>
+                        <div class="col-md-1 mb-3 d-flex align-items-end">
+                            <button type="button" id="clearFormBtn" class="btn btn-secondary w-100">
+                                <i class="fas fa-undo"></i> Clear
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- கருவிகள் -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-success" id="exportExcelBtn">
+                        <i class="fas fa-file-excel"></i> Excel-ல் ஏற்றுமதி
+                    </button>
+                    <button class="btn btn-secondary" id="importExcelBtn">
+                        <i class="fas fa-file-import"></i> இறக்குமதி
+                    </button>
+                    <input type="file" id="importFile" accept=".xlsx, .xls, .csv" style="display:none">
+                    <button class="btn btn-info" id="printTableBtn">
+                        <i class="fas fa-print"></i> அச்சிடு
+                    </button>
+                    <button class="btn btn-danger" id="deleteSelectedBtn">
+                        <i class="fas fa-trash-alt"></i> தேர்வு செய்தவை நீக்கு
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- தரவு அட்டவணை -->
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
+                <h5 class="mb-0"><i class="fas fa-list"></i> வேலைகள் பட்டியல்</h5>
+            </div>
+            <div class="card-body table-responsive">
+                <table class="table table-bordered table-hover" id="serviceTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th><input type="checkbox" id="selectAllCheckbox" style="transform: scale(1.2);"></th>
+                            <th>#</th><th>பெயர்</th><th>செல்</th><th>சேவை</th>
+                            <th>குறிப்பு எண்</th><th>நிலை</th><th>குறிப்பு</th>
+                            <th>கடைசி அப்டேட்</th>
+                            <th>செயல்கள் / Drive Link</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <script>
+        let services = [];
+        let editingIndex = null;
+        let googleDriveLink = localStorage.getItem('googleDriveFolderLink') || '';
+
+        // Load Google Drive Link from localStorage
+        function loadDriveLink() {
+            const saved = localStorage.getItem('googleDriveFolderLink');
+            if(saved) {
+                googleDriveLink = saved;
+                document.getElementById('googleDriveFolderLink').value = saved;
+            }
+        }
+
+        // Save Google Drive Link
+        document.getElementById('saveDriveLinkBtn').addEventListener('click', () => {
+            const newLink = document.getElementById('googleDriveFolderLink').value.trim();
+            if(newLink) {
+                googleDriveLink = newLink;
+                localStorage.setItem('googleDriveFolderLink', googleDriveLink);
+                showNotification('✅ Google Drive இணைப்பு சேமிக்கப்பட்டது!', 'success');
+                renderTable(); // Re-render to update drive links
+            } else {
+                showNotification('⚠️ தயவுசெய்து சரியான இணைப்பை உள்ளிடவும்', 'danger');
+            }
+        });
+
+        function showNotification(message, type = 'success') {
+            const notification = document.createElement('div');
+            notification.className = `copy-notification bg-${type}`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2000);
+        }
+
+        // Copy to clipboard function
+        async function copyToClipboard(text, serviceName) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showNotification(`✅ ${serviceName} - Drive Link நகலெடுக்கப்பட்டது!`, 'success');
+            } catch(err) {
+                // Fallback
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification(`✅ ${serviceName} - Drive Link நகலெடுக்கப்பட்டது!`, 'success');
+            }
+        }
+
+        // Send Drive Link via WhatsApp
+        function sendDriveLinkViaWhatsApp(mobile, name, serviceName, refNo, driveLink) {
+            let message = `*தாஸ் பொது சேவை மையம்*
+
+🙏 வணக்கம் ${name},
+
+தங்களின் *${serviceName}* சேவை (குறிப்பு எண்: ${refNo}) வெற்றிகரமாக முடிவடைந்துள்ளது.
+
+📄 *சேவை சான்றிதழ் / ஆவணங்களை* கீழே உள்ள இணைப்பில் கிளிக் செய்து பதிவிறக்கம் செய்துகொள்ளவும்:
+
+🔗 ${driveLink}
+
+📌 *குறிப்பு:* இணைப்பு உங்கள் வசதிக்கேற்ப எந்த நேரத்திலும் பயன்படுத்திக்கொள்ளலாம்.
+
+நன்றி! 😊`;
+            
+            let cleanPhone = mobile.toString().replace(/\D/g, '');
+            if(!cleanPhone.startsWith('91') && cleanPhone.length === 10) cleanPhone = '91' + cleanPhone;
+            let url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function getDriveLinkForService(service) {
+            if(!googleDriveLink) return null;
+            // You can also create personalized links by appending refNo
+            // For personalized folder: googleDriveLink + "/" + service.refNo
+            return googleDriveLink;
+        }
+
+        function loadData() {
+            const stored = localStorage.getItem('serviceCenterDataV3');
+            if(stored) {
+                services = JSON.parse(stored);
+                services.forEach(service => {
+                    if(!service.lastUpdated) service.lastUpdated = new Date().toLocaleString();
+                    if(service.whatsappCount === undefined) service.whatsappCount = 0;
+                    if(service.driveLinkSent === undefined) service.driveLinkSent = 0;
+                });
+                saveData();
+            } else {
+                services = [];
+            }
+            renderTable();
+        }
+
+        function saveData() {
+            localStorage.setItem('serviceCenterDataV3', JSON.stringify(services));
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            services.forEach((service, index) => {
+                const row = tbody.insertRow();
+                
+                const chkCell = row.insertCell(0);
+                const chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.className = 'row-checkbox';
+                chk.setAttribute('data-id', index);
+                chkCell.appendChild(chk);
+                
+                row.insertCell(1).innerText = index + 1;
+                row.insertCell(2).innerText = service.name;
+                row.insertCell(3).innerText = service.mobile;
+                row.insertCell(4).innerText = service.serviceName;
+                row.insertCell(5).innerText = service.refNo;
+                
+                let statusClass = '';
+                if(service.status === 'Completed') statusClass = 'bg-success text-white';
+                else if(service.status === 'In Progress') statusClass = 'bg-warning text-dark';
+                else statusClass = 'bg-secondary text-white';
+                
+                row.insertCell(6).innerHTML = `<span class="badge ${statusClass}">${service.status}</span>`;
+                row.insertCell(7).innerText = service.note || '-';
+                row.insertCell(8).innerHTML = `<span class="last-updated"><i class="far fa-clock"></i> ${service.lastUpdated || new Date().toLocaleString()}</span>`;
+                
+                const actions = row.insertCell(9);
+                
+                const isCompleted = service.status === 'Completed';
+                const driveLink = getDriveLinkForService(service);
+                const driveSentCount = service.driveLinkSent || 0;
+                
+                if(isCompleted && driveLink) {
+                    actions.innerHTML = `
+                        <div class="d-flex flex-wrap justify-content-center gap-1">
+                            <button class="btn btn-sm btn-warning edit-btn" data-id="${index}"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="${index}"><i class="fas fa-trash"></i></button>
+                            <button class="btn btn-sm btn-success copy-drive-btn" data-id="${index}" title="Drive Link ஐ நகலெடுக்க">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                            <button class="btn btn-sm btn-primary send-drive-wa-btn" data-id="${index}" title="Drive Link ஐ WhatsApp-ல் அனுப்ப">
+                                <i class="fab fa-whatsapp"></i>
+                                <span class="drive-count">${driveSentCount}</span>
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    actions.innerHTML = `
+                        <div class="d-flex flex-wrap justify-content-center gap-1">
+                            <button class="btn btn-sm btn-warning edit-btn" data-id="${index}"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="${index}"><i class="fas fa-trash"></i></button>
+                            ${!driveLink ? '<span class="text-muted small">Drive Link அமைக்கவும்</span>' : '<span class="text-muted small">முடிந்தவுடன் Link கிடைக்கும்</span>'}
+                        </div>
+                    `;
+                }
+            });
+            
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.removeEventListener('click', handleEdit);
+                btn.addEventListener('click', handleEdit);
+            });
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.removeEventListener('click', handleDelete);
+                btn.addEventListener('click', handleDelete);
+            });
+            document.querySelectorAll('.copy-drive-btn').forEach(btn => {
+                btn.removeEventListener('click', handleCopyDrive);
+                btn.addEventListener('click', handleCopyDrive);
+            });
+            document.querySelectorAll('.send-drive-wa-btn').forEach(btn => {
+                btn.removeEventListener('click', handleSendDriveWA);
+                btn.addEventListener('click', handleSendDriveWA);
+            });
+            
+            const selectAll = document.getElementById('selectAllCheckbox');
+            if(selectAll) {
+                selectAll.removeEventListener('change', handleSelectAll);
+                selectAll.addEventListener('change', handleSelectAll);
+            }
+        }
+        
+        function handleSelectAll(e) {
+            const isChecked = e.target.checked;
+            document.querySelectorAll('.row-checkbox').forEach(cb => {
+                cb.checked = isChecked;
+            });
+        }
+        
+        function handleEdit(e) {
+            const id = e.currentTarget.getAttribute('data-id');
+            editService(id);
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        
+        function handleDelete(e) {
+            const id = e.currentTarget.getAttribute('data-id');
+            if(confirm('இந்த வேலையை நீக்க வேண்டுமா?')) {
+                services.splice(id, 1);
+                saveData();
+                renderTable();
+            }
+        }
+        
+        function handleCopyDrive(e) {
+            const id = e.currentTarget.getAttribute('data-id');
+            const service = services[id];
+            const driveLink = getDriveLinkForService(service);
+            if(driveLink) {
+                copyToClipboard(driveLink, service.serviceName);
+            } else {
+                showNotification('⚠️ முதலில் Google Drive இணைப்பை அமைக்கவும்!', 'danger');
+            }
+        }
+        
+        function handleSendDriveWA(e) {
+            const id = e.currentTarget.getAttribute('data-id');
+            const service = services[id];
+            const driveLink = getDriveLinkForService(service);
+            if(driveLink) {
+                service.driveLinkSent = (service.driveLinkSent || 0) + 1;
+                service.lastUpdated = new Date().toLocaleString();
+                saveData();
+                renderTable();
+                sendDriveLinkViaWhatsApp(service.mobile, service.name, service.serviceName, service.refNo, driveLink);
+            } else {
+                showNotification('⚠️ முதலில் Google Drive இணைப்பை அமைக்கவும்!', 'danger');
+            }
+        }
+        
+        function addOrUpdateService(serviceData, isEdit = false) {
+            const now = new Date().toLocaleString();
+            if(isEdit && editingIndex !== null) {
+                const existing = services[editingIndex];
+                serviceData.whatsappCount = existing.whatsappCount || 0;
+                serviceData.driveLinkSent = existing.driveLinkSent || 0;
+                serviceData.lastUpdated = now;
+                services[editingIndex] = serviceData;
+                editingIndex = null;
+                document.querySelector('#serviceForm button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> சேமி / புதுப்பி';
+            } else {
+                serviceData.whatsappCount = 0;
+                serviceData.driveLinkSent = 0;
+                serviceData.lastUpdated = now;
+                services.unshift(serviceData);
+            }
+            saveData();
+            renderTable();
+            document.getElementById('serviceForm').reset();
+            document.getElementById('formSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        document.getElementById('serviceForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newService = {
+                name: document.getElementById('name').value.trim(),
+                mobile: document.getElementById('mobile').value.trim(),
+                serviceName: document.getElementById('serviceName').value.trim(),
+                refNo: document.getElementById('refNo').value.trim(),
+                status: document.getElementById('status').value,
+                note: document.getElementById('note').value.trim()
+            };
+            if(!newService.name || !newService.mobile || !newService.serviceName || !newService.refNo) {
+                alert("தயவுசெய்து பெயர், செல் நம்பர், சேவை பெயர் மற்றும் குறிப்பு எண் ஆகியவற்றை நிரப்பவும்.");
+                return;
+            }
+            addOrUpdateService(newService, editingIndex !== null);
+        });
+        
+        function editService(id) {
+            const service = services[id];
+            document.getElementById('name').value = service.name;
+            document.getElementById('mobile').value = service.mobile;
+            document.getElementById('serviceName').value = service.serviceName;
+            document.getElementById('refNo').value = service.refNo;
+            document.getElementById('status').value = service.status;
+            document.getElementById('note').value = service.note || '';
+            editingIndex = id;
+            document.querySelector('#serviceForm button[type="submit"]').innerHTML = '<i class="fas fa-edit"></i> புதுப்பி';
+        }
+        
+        document.getElementById('deleteSelectedBtn').addEventListener('click', () => {
+            const checkboxes = document.querySelectorAll('.row-checkbox:checked');
+            if(checkboxes.length === 0) {
+                alert("தயவுசெய்து நீக்குவதற்கு குறைந்தது ஒரு வரியையாவது தேர்வு செய்யவும்.");
+                return;
+            }
+            if(confirm(`${checkboxes.length} பதிவு(களை) நீக்க விரும்புகிறீர்களா?`)) {
+                const indicesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-id'))).sort((a,b)=>b-a);
+                indicesToDelete.forEach(idx => services.splice(idx, 1));
+                saveData();
+                renderTable();
+                document.getElementById('selectAllCheckbox').checked = false;
+            }
+        });
+        
+        document.getElementById('exportExcelBtn').addEventListener('click', () => {
+            const exportData = services.map((s, i) => ({
+                'வ.எண்': i+1, 'பெயர்': s.name, 'செல் நம்பர்': s.mobile,
+                'சேவை பெயர்': s.serviceName, 'குறிப்பு எண்': s.refNo,
+                'சேவை நிலை': s.status, 'குறிப்பு': s.note || '',
+                'கடைசி அப்டேட்': s.lastUpdated || '',
+                'வாட்ஸ்அப் கிளிக்': s.whatsappCount || 0,
+                'Drive Link அனுப்பியது': s.driveLinkSent || 0
+            }));
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'ServiceTracking');
+            XLSX.writeFile(wb, `service_center_${new Date().toISOString().slice(0,19)}.xlsx`);
+        });
+        
+        document.getElementById('importExcelBtn').addEventListener('click', () => {
+            document.getElementById('importFile').value = '';
+            document.getElementById('importFile').click();
+        });
+        
+        document.getElementById('importFile').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                const data = new Uint8Array(evt.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(firstSheet);
+                const newServices = rows.map(row => ({
+                    name: row['பெயர்'] || row['Name'] || '',
+                    mobile: row['செல் நம்பர்'] || row['Mobile'] || '',
+                    serviceName: row['சேவை பெயர்'] || row['Service'] || '',
+                    refNo: row['குறிப்பு எண்'] || row['RefNo'] || '',
+                    status: row['சேவை நிலை'] || row['Status'] || 'Pending',
+                    note: row['குறிப்பு'] || row['Note'] || '',
+                    lastUpdated: new Date().toLocaleString(),
+                    whatsappCount: 0,
+                    driveLinkSent: 0
+                })).filter(s => s.name && s.mobile);
+                if(newServices.length) {
+                    if(confirm('பழைய தரவுகளை நீக்கிவிட்டு புதியதை இறக்குமதி செய்யவா? "OK" → நீக்கும், "Cancel" → சேர்க்கும்')) {
+                        services = [];
+                        newServices.forEach(s => services.unshift(s));
+                    } else {
+                        newServices.forEach(s => services.unshift(s));
+                    }
+                    saveData();
+                    renderTable();
+                    alert(`${newServices.length} பதிவுகள் இறக்குமதி செய்யப்பட்டன. மொத்தம்: ${services.length}`);
+                } else {
+                    alert('சரியான தரவு இல்லை.');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            e.target.value = '';
+        });
+        
+        document.getElementById('printTableBtn').addEventListener('click', () => window.print());
+        document.getElementById('clearFormBtn').addEventListener('click', () => {
+            document.getElementById('serviceForm').reset();
+            editingIndex = null;
+            document.querySelector('#serviceForm button[type="submit"]').innerHTML = '<i class="fas fa-save"></i> சேமி / புதுப்பி';
+        });
+        
+        loadDriveLink();
+        loadData();
+    </script>
+</body>
+</html>
